@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>jQuery Mobile: Demos and Documentation</title>
+<!--
+	<link rel="stylesheet"  href="jquery.mobile-1.0.1.min.css" />
+	<link rel="stylesheet" href="docs/_assets/css/jqm-docs.css" />
+	<script src="jquery.js"></script>
+	<script src="experiments/themeswitcher/jquery.mobile.themeswitcher.js"></script>
+	<script src="docs/_assets/js/jqm-docs.js"></script>
+	<script src="jquery.mobile-1.0.1.min.js"></script>
+	
+	<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+-->
+	<script src="js/libs/jquery-1-9-1.min.js"></script>
+
+  <!--link href="css/styles.css" rel="stylesheet" media="screen"-->
+  <!--link href="css/debug.css" rel="stylesheet" media="screen"-->
+<!--
+  <link href="css/styles.min.css" rel="stylesheet" media="screen">
+  <link href="css/debug.min.css" rel="stylesheet" media="screen">
+-->
+	<script>
+ 
+	var api = "http://192.168.5.1/d3dapi/"; //you can use this address when using the UTP cable
+ 
+	$(document).ready(function() {
+	
+		//get current status from Doodle3D WiFiBox
+		$.ajax({
+		  url: api+"info/status",
+		  dataType: 'json',
+		  success: function(response) {
+			$("#divHotend").html(response.data.hotend);
+			$("#divHotendTarget").html(response.data.hotend_target);
+			$("#sliderHotend").val(response.data.hotend_target);
+			$("#divState").html("status: " + response.data.state);
+		  }
+		  }).fail(function() { 
+			alert('fail1');
+		});
+		
+/*
+//		var postData = {gcode: "M104 S80\n", first: true, start: true};
+		var postData = {gcode: "G91\nG1 X10", first: true, start: true};
+		$.ajax({
+//		  url: api+"printer/print",
+//		  url: api+"printer/stop",
+		  type: "POST",
+		  dataType: 'json',
+		  data: postData,
+		  success: function(response) {
+//			alert('succes');
+		  }
+		  }).fail(function() { 
+			alert('fail');
+		});
+*/
+ 
+	});
+
+	function sendJog(code, value) {
+
+		var data = "G91\nG1 " + code + $("#stepssize").val() + " F"+ $("#feedrate").val()*60;
+//		var data = "G91\nG1 X10";
+//			alert(data);
+		sendGcode(data);
+	};
+	function sendMcode(code, sub, value, id) {
+
+		var data = code + " S" + value;
+//		var data = "G91\nG1 X10";
+			alert(data);
+		sendGcode(data);
+		$(id).html(value);
+
+	};
+
+	function sendGcode(data) {
+		var postData = {gcode: data, first: true, start: true};
+		$.ajax({
+		  url: api+"printer/print",
+//		  url: api+"printer/stop",
+		  type: "POST",
+		  dataType: 'json',
+		  data: postData,
+		  success: function(response) {
+//			alert('succes');
+		  }
+		  }).fail(function() { 
+			alert('fail');
+		});
+
+ 
+	};
+
+ 
+	</script>
+
+</head> 
+<body> 
+<div data-role="page" class="type-home">
+	<div data-role="content">
+		<p id="jqm-version">Ultifi - remote acces to Ultimakers</p>
+
+		
+		<div class="content-primary">
+	
+			<div id="jqm-homeheader">
+				<h1 id="jqm-logo"><img src="docs/_assets/images/jquery-logo.png" alt="jQuery Mobile Framework" /></h1>
+				<p>Touch-Optimized Web Control for Ultimakers on Smartphones &amp; Tablets</p>
+			</div>
+
+			<p class="intro"><strong>Welcome.</strong> First try for a gui for the Doodle3D control. Your machine <div id="divState" style="display: inline;"></div>. to USB001.</p>
+				
+			<div data-role="collapsible" data-theme="b" data-content-theme="d" data-collapsed="false">
+				<h3>Control</h3>
+					<fieldset class="ui-grid-a">
+						<div class="ui-block-a">
+							<div class="ui-grid-b">
+								<div class="ui-block-a"></div>
+								<div class="ui-block-b"><button type="submit" data-theme="c" onclick="sendJog('Y')">Y+</button></div>
+								<div class="ui-block-c"></div>
+							</div>
+							<div class="ui-grid-b">
+								<div class="ui-block-a"><button type="submit" data-theme="c" onclick="sendJog('X-')">X-</button></div>
+								<div class="ui-block-b"></div>
+								<div class="ui-block-c"><button type="submit" data-theme="c" onclick="sendJog('X')">X+</button></div>
+							</div>
+							<div class="ui-grid-b">
+								<div class="ui-block-a"></div>
+								<div class="ui-block-b"><button type="submit" data-theme="c" onclick="sendJog('Y-')">Y-</button></div>
+								<div class="ui-block-c"></div>
+							</div>
+						</div>
+						<div class="ui-block-b">
+								<div class="ui-block-a"><button type="submit" data-theme="c" onclick="sendJog('Z-')">Z-</button></div>
+								<div class="ui-block-a"><button type="submit" data-theme="c" onclick="sendJog('Z')">Z+</button></div>	   
+								<div class="ui-block-a">
+									<label for="basic">Steps in mm:</label>
+									<input type="text" name="name" id="stepssize" value="1"/>
+								</div>
+								<div class="ui-block-a">
+									<label for="basic">Speed in mm/s:</label>
+									<input type="text" name="name" id="feedrate" value="50"/>
+								</div>
+						</div>	   
+					</fieldset>
+			<p class="intro"></p>
+					<div data-role="controlgroup" data-type="horizontal">
+						<button type="submit" data-theme="c" onclick="sendGcode('G28')">Home</button>
+						<button type="submit" data-theme="c" onclick="sendGcode('G28 X0')">Home X</button>
+						<button type="submit" data-theme="c" onclick="sendGcode('G28 Y0')">Home Y</button>
+						<button type="submit" data-theme="c" onclick="sendGcode('G28 Z0')">Home Z</button>
+					</div>
+			</div>
+
+			<div data-role="collapsible" data-theme="b" data-content-theme="d" data-collapsed="false">
+				<h3>Tune [current value's]</h3>
+				<div data-role="fieldcontain">
+						<label for="slider-0">Speed [<div id="divSpeed" style="display: inline;">100</div>%]:</label>
+						<input onchange="sendMcode('M220','S', this.value, divSpeed)" type="range" name="slider" id="slider-0" value="100" min="0" max="300" step="1" />
+				</div>
+
+				<div data-role="fieldcontain">
+						<label for="slider-0">Temp [<div id="divHotend" style="display: inline;"></div>&deg;C/<div id="divHotendTarget" style="display: inline;">0</div>&deg;C]:</label>
+						<input onchange="sendMcode('M104','S', this.value, divHotendTarget)" type="range" name="printer.temperature" id="sliderHotend" value="200" min="0" max="250" step="1" />
+				</div>
+
+				<div data-role="fieldcontain">
+						<label for="slider-0">Flow [<div id="divFlow" style="display: inline;">100</div>%]:</label>
+						<input onchange="sendMcode('M221','S', this.value, divFlow)" type="range" name="slider" id="slider-0" value="100" min="10" max="300" step="1" />
+				</div>
+
+				<div data-role="fieldcontain">
+						<label for="slider-0">Fan Speed [<div id="divFan" style="display: inline;">0</div>%]:</label>
+						<input onchange="sendMcode('M106','S', this.value, divFan)" type="range" name="slider" id="slider-0" value="255" min="0" max="255" step="1" />
+				</div>
+
+				<div data-role="fieldcontain">
+						<label for="basic">Custom gcode:</label>
+						<input type="text" name="name" id="basic" value=""  />
+				</div>
+				<div class="ui-body">
+				<fieldset class="ui-grid-a">
+						<div class="ui-block-a"><button type="submit" data-theme="c">Cancel</button></div>
+						<div class="ui-block-b"><button type="submit" data-theme="b">Submit</button></div>
+				</fieldset>
+				</div>
+			</div>
+
+			<div data-role="collapsible" data-theme="b" data-content-theme="d" data-collapsed="false">
+				<h3>Prepare</h3>
+					<div data-role="controlgroup">
+					<a onclick="sendMcode('M104', '200')" href="index.html" data-role="button" data-theme="c">Preheat PLA</a>
+					<a onclick="sendMcode('M104', '240')" href="index.html" data-role="button" data-theme="c">Preheat ABS</a>
+					<a onclick="sendMcode('M84')" href="index.html" data-role="button" data-theme="c">Disable steppers</a>
+					<a onclick="sendMcode('M28')" href="index.html" data-role="button" data-theme="c">Auto Home</a>
+					<a onclick="sendMcode('M104', '0')" href="index.html" data-role="button" data-theme="c">Cool down</a>
+					</div>
+			</div>
+
+			<div data-role="collapsible" data-theme="b" data-content-theme="d">
+				<h3>Advanced</h3>
+				<ul data-role="listview" data-inset="false" data-theme="c" data-dividertheme="b">
+					<li data-role="list-divider">Temperature</li>
+					<li><a href="docs/pages/index.html">Nozzle</a></li>
+					<li><a href="docs/toolbars/index.html">Heated bed</a></li>
+					<li><a href="docs/buttons/index.html">Fan speed</a></li>
+					<li><a href="docs/toolbars/index.html">PID</a></li>
+					<li data-role="list-divider">Motion</li>
+					<li><a href="docs/pages/index.html">Accelleration</a></li>
+					<li><a href="docs/buttons/index.html">Jerk</a></li>
+				</ul>
+			</div>
+			<div data-role="collapsible" data-theme="b" data-content-theme="d">
+				<h3>Files</h3>
+				<p>Files on the SD card</p>
+				<ul data-role="listview" data-filter="true" data-theme="c" data-dividertheme="f">
+					<li><a href="index.html">Acura</a></li>
+					<li><a href="index.html">Audi</a></li>
+					<li><a href="index.html">BMW</a></li>
+					<li><a href="index.html">Cadillac</a></li>
+					<li><a href="index.html">Chrysler</a></li>
+					<li><a href="index.html">Dodge</a></li>
+					<li><a href="index.html">Ferrari</a></li>
+					<li><a href="index.html">Ford</a></li>
+					<li><a href="index.html">GMC</a></li>
+					<li><a href="index.html">Honda</a></li>
+					<li><a href="index.html">Hyundai</a></li>
+					<li><a href="index.html">Infiniti</a></li>
+					<li><a href="index.html">Jeep</a></li>
+					<li><a href="index.html">Kia</a></li>
+					<li><a href="index.html">Lexus</a></li>
+					<li><a href="index.html">Mini</a></li>
+					<li><a href="index.html">Nissan</a></li>
+					<li><a href="index.html">Porsche</a></li>
+					<li><a href="index.html">Subaru</a></li>
+					<li><a href="index.html">Toyota</a></li>
+					<li><a href="index.html">Volkswagon</a></li>
+					<li><a href="index.html">Volvo</a></li>
+				</ul>
+			</div>
+
+		</div>
+	</div>
+	
+	<div data-role="footer" class="footer-docs" data-theme="c">
+			<p>&copy; 2011-2012 The jQuery Project</p>
+	</div>	
+	
+</div>
+</body>
+</html>
